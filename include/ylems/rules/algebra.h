@@ -92,7 +92,7 @@ namespace ylems
         {
             auto& the_sink = sink._get_();
             for(auto&& e: yield._get_())
-                if(!the_sink(e))
+                if(!the_sink.consume(e))
                     return false; // if sink forced to stop
             return true;
         }
@@ -136,13 +136,13 @@ namespace ylems
         }
 
         template<template<typename> typename tag, typename X, typename Y>
-        auto meld_tag(tag<X> const& x, tag<Y>&& y) // helper to kick-in ADL and static polymorphism
+        auto meld_tag(tag<X> const& x, tag<Y>&& y)
         {
             return meld<tag>(x._get_(), FWD(y)._get_());
         }
 
         template<template<typename> typename tag, typename X, typename Y>
-        auto meld_tag(tag<X>&& x, tag<Y> const& y) // helper to kick-in ADL and static polymorphism
+        auto meld_tag(tag<X>&& x, tag<Y> const& y)
         {
             return meld<tag>(FWD(x)._get_(), y._get_());
         }
@@ -153,6 +153,7 @@ namespace ylems
             return meld<tag>(x._get_(), y._get_());
         }
 
+        // last two for Sink actually
         template<template<typename> typename tag, typename X, typename Y>
         auto meld_tag(tag<X>&& x, tag<Y>& y) // helper to kick-in ADL and static polymorphism
         {

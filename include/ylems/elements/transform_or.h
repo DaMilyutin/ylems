@@ -14,7 +14,16 @@ namespace ylems
             template<typename F>
             TransformOrWrap(F&& f): transform(FWD(f)) {}
 
-            auto operator()(auto x) const { return transform(x); }
+            auto operator()(auto&& x) const { return transform(FWD(x)); }
+
+            template<typename S, typename E>
+            bool feed(S& sink, E&& e) const
+            {
+                auto res = transform(FWD(e));
+                if(res) // nullable type assumed
+                    return sink.consume(*res);
+                return true;
+            }
             Func  transform;
         };
 
@@ -22,11 +31,19 @@ namespace ylems
         struct TransformOrWrap2: public categories::TransformOr<TransformOrWrap2<Sel, Trans, tag>, tag>
         {
             template<typename F, typename G>
-            TransformOrWrap2(F&& f, G&& g): select(FWD(f)), trans(FWD(g)) {}
+            TransformOrWrap2(F&& f, G&& g): select(FWD(f)), transform(FWD(g)) {}
 
-            auto operator()(auto x) const { return select(x) ? std::make_optional(trans(x)) : std::nullopt; }
+            template<typename S, typename E>
+            bool feed(S& sink, E&& e) const
+            {
+                if(select(e))
+                    return sink.consume(transform(FWD(e)));
+                return true;
+            }
+
+            auto operator()(auto&& x) const { return select(x) ? std::make_optional(transform(FWD(x))) : std::nullopt; }
             Sel   select;
-            Trans trans;
+            Trans transform;
         };
 
         template<template<typename> typename tag, typename F>

@@ -22,7 +22,7 @@ namespace ylems
             template<typename S, typename E>
             bool feed(S& sink, E&& e) const
             {
-                return sink.eat(transform(FWD(e)));
+                return sink.consume(transform(FWD(e)));
             }
 
             Func transform;
