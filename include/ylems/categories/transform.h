@@ -40,6 +40,13 @@ namespace ylems
                 static auto end(Y const& y, T const&) { return Sentinel{std::end(y)}; }
             };
 
+            template<typename S, typename E>
+            bool feed(S& sink, E&& e) const
+            {
+                auto const& transform = this->_get_();
+                return sink.consume(transform(FWD(e)));
+            }
+
             template<typename Y> auto begin(Y const& y) const { return YieldDescriptor<Y>::begin(y, this->_get_()); }
             template<typename Y> auto end(Y const& y) const { return YieldDescriptor<Y>::end(y, this->_get_()); }
         };
