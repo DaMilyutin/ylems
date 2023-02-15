@@ -5,3 +5,5 @@
 #include "elements/transform.h"
 #include "elements/transform_or.h"
 #include "elements/zip.h"
+#include "elements/take.h"
+#include "elements/drop.h"
