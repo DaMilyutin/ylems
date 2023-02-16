@@ -89,7 +89,7 @@ They are
 
 ## Elements
 
-Some specific elements implementation can be seen [here](Elements.md)
+Some specific elements description can be seen [here](Elements.md)
 
 ## User code
 
