@@ -22,7 +22,7 @@ namespace ylems
             {
                 if(!select(e))
                     return false;
-                return (sink._get_()).consume(FWD(e));
+                return sink.consume(FWD(e));
             }
 
             Func select;

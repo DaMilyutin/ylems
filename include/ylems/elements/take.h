@@ -60,7 +60,7 @@ namespace ylems
             bool feed(S& sink, E&& e) const
             {
                 if(count-- > I())
-                    return (sink._get_()).consume(FWD(e));
+                    return sink.consume(FWD(e));
                 return true;
             }
 

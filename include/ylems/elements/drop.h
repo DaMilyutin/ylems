@@ -61,7 +61,7 @@ namespace ylems
             {
                 if(count-- > I())
                     return true;
-                return (sink._get_()).consume(FWD(e));
+                return sink.consume(FWD(e));
             }
 
             I mutable count;
