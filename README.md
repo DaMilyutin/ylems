@@ -5,27 +5,29 @@
 
 Repository for pipeline building
 
+The name comes from two parts.
 In the Big Bang theory ylem is the primordial matter of the universe.
 And also I use terms Yield, Link, Sink, Meld and Element for some basic building blocks.
+So abbreviation YLEMS is quite neat here and matches with goal.
 
 
-## Idea
+## Abstract and Rules
 
 Pipeline for ranges or pipes consists of following basic units:
-* Yield - basically range or iterable - producer of values; 
-* Sink - consumer of values;
-* Link - some sort of transformator/filter of values; Link is in between Yield and Sink.
+* `Yield` - basically range or iterable - producer of values; 
+* `Sink` - consumer of values;
+* `Link` - some sort of transformator/filter of values; Link is in between `Yield` and `Sink`.
 
 When we attach elements we `meld` them.
 
-Herafter for convenience, we will denote melding with operator `/`.
+Herafter, for convenience we will denote melding with operator `/`.
 
 Rules are:
-1. Melded elements in form of `Yield/Link` is Yield type.
-2. Melded elements in form of `Link/Link`  is Link type.
-3. Melded elements in form of `Link/Sink`  is Sink type.
+1. Melded elements in form of `Yield/Link` is `Yield` type.
+2. Melded elements in form of `Link/Link`  is `Link` type.
+3. Melded elements in form of `Link/Sink`  is `Sink` type.
 4. When connect `Yield/Sink` iteration starts.
-5. Sink is preference. So, `(Yield/Link)/Sink` is rebuilt into `Yield/(Link/Sink)` before final iteration.
+5. `Sink` is preference. So, `(Yield/Link)/Sink` is rebuilt into `Yield/(Link/Sink)` before final iteration.
 
 Having these rules one can write ones own piping-ranging DSLs.
 
@@ -34,45 +36,47 @@ Having these rules one can write ones own piping-ranging DSLs.
 ### Language restrictions
 
 By now I rely on `C++17`.
-This can be downgreaded to `C++11`, I guess. But it is 2023 now.
+This can be downgraded to `C++11`, I guess. But it is 2023 now.
 
 ### Mutability
 
-In most cases I assume that Yield does const-iteration.
+In most cases I assume that `Yield` does const-iteration.
 
 ## Basic blocks
 
 ### tag base
 
-We want to have pipeline with distibuishable DSL.
+We want to have pipeline with distibuishable DSLs.
 That's why some sort of static polymorphysm must be used.
 I chose to use one based on inheritance deduction.
 This is less SFINAE but user elements implementation requires to publically inherit from special tag struct.
 
-Since we may want to have separate pipelines with different precedence, we may have different tags fpr them.
-That's why in ylems namespace tag is obligatory.
+Since we may want to have separate pipelines with different precedence, we may have different tags for them.
+That's why tag is obligatory in ylems namespace.
 
 ### Yield
 
-Anything iterable can be Yield.
+Anything iterable can be `Yield`.
 
 ### Sink
 
-Must provide at least method `consume` either generic or specific with signature `bool consume(E e)`
+Must provide at least one method `consume` either generic or specific with signature of form `bool consume(E e)`
 with E be either value or reference.
 
 Returned `bool` is signal for iteration to continue (`true`) or to stop (`false`).
 
 ### Link
 
-If Link has some yield interaction implemented one may have ranges functionality for `Yield/Link`.
+If `Link` has some yield interaction, one may have ranges functionality for `Yield/Link`.
    ex. range based for.
-To work right in case `Yield/Link` Link must provide generic methods begin(Y&), end(Y&) returning iterator and sentinel.
-(iterator and sentinel are impelmentation details. FYI, Since C++17 Sentinel type can have different type than iterator).
+To work right in case `Yield/Link` `Link` must provide generic methods begin(Y const&), end(Y const&) returning iterator and sentinel.
+(iterator and sentinel are impelmentation details. FYI, Since C++17 sentinel type can have different type than iterator).
 
-If Link has Sink interaction implemented one may have Sink functionality for `Link/Sink`.
-To work right with `Link/Sink` Link must provide method `bool feed(S& sink, E e) const` with E be either value or reference
-and S,E be generic or specific. After this done `consume` is available.
+If Link has `Sink` interaction implemented one may have `Sink` functionality for `Link/Sink`.
+To work right with `Link/Sink` `Link` must provide at least one specific or generic method in form `bool feed(S& sink, E e) const` 
+with E be either value or reference. After this done `consume` is available. 
+
+Returned `bool` is signal for iteration to continue (`true`) or to stop (`false`).
 
 
 ## Link Categories
@@ -82,7 +86,6 @@ They are
 * Filter      - skip values which do not satisfy condition;
 * Transform   - obv. transform values and pass them on;
 * TransformOr - either skip or pass transformed value; can be thought as meld of Transform and Filter but with some optimization.
-
 
 ## Elements
 
