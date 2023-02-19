@@ -7,8 +7,8 @@ namespace ylems
 {
     namespace categories
     {
-        template<typename F, template<typename> typename tag>
-        struct Filter: rules::Link<F, tag>
+        template<template<typename> typename tag, typename F>
+        struct Filter: rules::Link<tag, F>
         {
             template<typename Y>
             struct YieldDescriptor

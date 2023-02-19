@@ -6,8 +6,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename Range, template<typename> typename tag>
-        struct YieldWrap: public rules::Yield<YieldWrap<Range, tag>, tag>
+        template<template<typename> typename tag, typename Range>
+        struct YieldWrap: public rules::Yield<tag, YieldWrap<tag, Range>>
         {
             template<typename R>
             YieldWrap(R&& r): range(std::forward<R>(r)) {}
@@ -19,16 +19,16 @@ namespace ylems
         };
 
         template<template<typename> typename tag, typename R>
-        auto yield(R const& r) { return YieldWrap<R const&, tag>{r}; }
+        auto yield(R const& r) { return YieldWrap<tag, R const&>{r}; }
 
         template<template<typename> typename tag, typename R>
-        auto yield(R&& r) { return YieldWrap<R, tag>{FWD(r)}; }
+        auto yield(R&& r) { return YieldWrap<tag, R>{FWD(r)}; }
 
         template<template<typename> typename tag, typename R>
-        void yield(rules::Yield<R, tag>&&) = delete;  // forbid
+        void yield(rules::Yield<tag, R>&&) = delete;  // forbid
 
         template<template<typename> typename tag, typename R>
-        void yield(rules::Yield<R, tag> const&) = delete; // forbid
+        void yield(rules::Yield<tag, R> const&) = delete; // forbid
     }
 }
 

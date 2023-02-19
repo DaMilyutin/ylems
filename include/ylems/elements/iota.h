@@ -11,8 +11,8 @@ namespace ylems
         using difference_type = std::remove_all_extents_t<decltype(std::declval<T>()-std::declval<T>())>;
 
 
-        template<typename T, typename D, typename I, template<typename> typename tag>
-        class Iota: public rules::Yield<Iota<T, D, I, tag>, tag>
+        template<template<typename> typename tag, typename T, typename D, typename I>
+        class Iota: public rules::Yield<tag, Iota<tag, T, D, I>>
         {
             static_assert(std::is_integral_v<I>, "Iota: third template parameter must be integral!");
             T _start;
@@ -47,8 +47,8 @@ namespace ylems
             Sentinel end() const { return Sentinel{}; }
         };
 
-        template<typename T, typename D, template<typename> typename tag>
-        class Iota<T, D, void, tag>: public rules::Yield<Iota<T, D, void, tag>, tag>
+        template<template<typename> typename tag, typename T, typename D>
+        class Iota<tag, T, D, void>: public rules::Yield<tag, Iota<tag, T, D, void>>
         {
             T _start;
             D _inc;
@@ -81,33 +81,33 @@ namespace ylems
         template<template<typename> typename tag, typename T, typename D, typename I>
         auto iota(T t, D d, I i)
         {
-            return Iota<T, D, I, tag>{t, d, i};
+            return Iota<tag, T, D, I>{t, d, i};
         }
 
         template<template<typename> typename tag, typename T, typename D>
         auto iota(T t, D d)
         {
-            return Iota<T, D, void, tag>(t, d);
+            return Iota<tag, T, D, void>(t, d);
         }
 
         template<template<typename> typename tag, typename T, typename I>
         auto linspace(T b, T e, I i)
         {
-            return Iota<T, difference_type<T>, I, tag>{b, (e-b)/(i), i+1};
+            return Iota<tag, T, difference_type<T>, I>{b, (e-b)/(i), i+1};
         }
 
         template<template<typename> typename tag, typename T>
         auto range(T b, T e, T step)
         {
             assert(step != T() && (e-b)/step >= T());
-            return Iota<T, difference_type<T>, size_t, tag>{b, step, size_t((e-b)/(step))};
+            return Iota<tag, T, difference_type<T>, size_t>{b, step, size_t((e-b)/(step))};
         }
 
         template<template<typename> typename tag, typename T>
         auto range(T b, T e)
         {
             assert(e >= b);
-            return Iota<T, difference_type<T>, size_t, tag>{b, T(1), size_t(e-b)};
+            return Iota<tag, T, difference_type<T>, size_t>{b, T(1), size_t(e-b)};
         }
     }
 

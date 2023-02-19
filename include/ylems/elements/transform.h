@@ -8,8 +8,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename Func, template<typename> typename tag>
-        struct TransformWrap: public categories::Transform<TransformWrap<Func, tag>, tag>
+        template<template<typename> typename tag, typename Func>
+        struct TransformWrap: public categories::Transform<tag, TransformWrap<tag, Func>>
         {
             template<typename F>
             TransformWrap(F&& f): transform(FWD(f)) {}
@@ -29,19 +29,19 @@ namespace ylems
         };
 
         template<template<typename> typename tag, typename F>
-        auto transform(F const& f) { return TransformWrap<F const&, tag>{ f}; }
+        auto transform(F const& f) { return TransformWrap<tag, F const&>{ f}; }
 
         template<template<typename> typename tag, typename F>
-        auto transform(F&& f) { return TransformWrap<F, tag>{FWD(f)}; }
+        auto transform(F&& f) { return TransformWrap<tag, F>{FWD(f)}; }
 
         template<template<typename> typename tag, typename F>
-        auto transform(categories::Transform<F, tag>&&)
+        auto transform(categories::Transform<tag, F>&&)
         {
             assert(false && "Trying to wrap already Transformer in transform!");
         }
 
         template<template<typename> typename tag, typename F>
-        auto transform(categories::Transform<F, tag> const&)
+        auto transform(categories::Transform<tag, F> const&)
         {
             assert(false && "Trying to wrap already Transformer in transform!");
         }

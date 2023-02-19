@@ -9,8 +9,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename I, template<typename> typename tag>
-        struct TakeWrap: public categories::Filter<TakeWrap<I, tag>, tag>
+        template<template<typename> typename tag, typename I>
+        struct TakeWrap: public categories::Filter<tag, TakeWrap<tag, I>>
         {
             TakeWrap(I c): count(c) { assert(count >= I()); }
 
@@ -71,13 +71,13 @@ namespace ylems
         auto take(I count) { return TakeWrap<I, tag>{count}; }
 
         template<template<typename> typename tag, typename I>
-        auto take(TakeWrap<I, tag>&&)
+        auto take(TakeWrap<tag, I>&&)
         {
             assert(false && "Trying to wrap Take in Take!");
         }
 
         template<template<typename> typename tag, typename I>
-        auto take(TakeWrap<I, tag> const&)
+        auto take(TakeWrap<tag, I> const&)
         {
             assert(false && "Trying to wrap Take in Take!");
         }

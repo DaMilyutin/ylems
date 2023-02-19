@@ -9,8 +9,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename Func, template<typename> typename tag>
-        struct FilterWrap: public categories::Filter<FilterWrap<Func, tag>, tag>
+        template<template<typename> typename tag, typename Func>
+        struct FilterWrap: public categories::Filter<tag, FilterWrap<tag, Func>>
         {
             template<typename F>
             FilterWrap(F&& f): select(std::forward<F>(f)) {}
@@ -35,13 +35,13 @@ namespace ylems
         auto filter(F&& f) { return FilterWrap<F, tag>{ std::move(f)}; }
 
         template<template<typename> typename tag, typename F>
-        auto filter(categories::Filter<F, tag>&&)
+        auto filter(categories::Filter<tag, F>&&)
         {
             assert(false && "Trying to wrap Filter in filter!");
         }
 
         template<template<typename> typename tag, typename F>
-        auto filter(categories::Filter<F, tag> const&)
+        auto filter(categories::Filter<tag, F> const&)
         {
             assert(false && "Trying to wrap Filter in filter!");
         }

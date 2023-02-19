@@ -9,8 +9,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename I, template<typename> typename tag>
-        struct DropWrap: public categories::Filter<DropWrap<I, tag>, tag>
+        template<template<typename> typename tag, typename I>
+        struct DropWrap: public categories::Filter<tag, DropWrap<tag, I>>
         {
             DropWrap(I c): count(c) { assert(count >= I()); }
 
@@ -71,13 +71,13 @@ namespace ylems
         auto drop(I count) { return DropWrap<I, tag>{count}; }
 
         template<template<typename> typename tag, typename I>
-        auto drop(DropWrap<I, tag>&&)
+        auto drop(DropWrap<tag, I>&&)
         {
             assert(false && "Trying to wrap Drop in Drop!");
         }
 
         template<template<typename> typename tag, typename I>
-        auto drop(DropWrap<I, tag> const&)
+        auto drop(DropWrap<tag, I> const&)
         {
             assert(false && "Trying to wrap Drop in Drop!");
         }

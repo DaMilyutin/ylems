@@ -8,8 +8,8 @@ namespace ylems
 {
     namespace elements
     {
-        template<typename Func, template<typename> typename tag>
-        struct TransformOrWrap: public categories::TransformOr<TransformOrWrap<Func, tag>, tag>
+        template<template<typename> typename tag, typename Func>
+        struct TransformOrWrap: public categories::TransformOr<tag, TransformOrWrap<tag, Func>>
         {
             template<typename F>
             TransformOrWrap(F&& f): transform(FWD(f)) {}
@@ -27,8 +27,8 @@ namespace ylems
             Func  transform;
         };
 
-        template<typename Sel, typename Trans, template<typename> typename tag>
-        struct TransformOrWrap2: public categories::TransformOr<TransformOrWrap2<Sel, Trans, tag>, tag>
+        template<template<typename> typename tag, typename Sel, typename Trans>
+        struct TransformOrWrap2: public categories::TransformOr<tag, TransformOrWrap2<tag, Sel, Trans>>
         {
             template<typename F, typename G>
             TransformOrWrap2(F&& f, G&& g): select(FWD(f)), transform(FWD(g)) {}
@@ -47,22 +47,22 @@ namespace ylems
         };
 
         template<template<typename> typename tag, typename F>
-        auto transform_or(F const& f) { return TransformOrWrap<F const&, tag>{ f}; }
+        auto transform_or(F const& f) { return TransformOrWrap<tag, F const&>{ f}; }
 
         template<template<typename> typename tag, typename F>
-        auto transform_or(F&& f) { return TransformOrWrap<F, tag>{std::move(f)}; }
+        auto transform_or(F&& f) { return TransformOrWrap<tag, F>{std::move(f)}; }
 
         template<template<typename> typename tag, typename F, typename G>
-        auto transform_or(F&& f, G&& g) { return TransformOrWrap2<F, G, tag>{FWD(f), FWD(g)}; }
+        auto transform_or(F&& f, G&& g) { return TransformOrWrap2<tag, F, G>{FWD(f), FWD(g)}; }
 
         template<template<typename> typename tag, typename F>
-        auto transform_or(categories::TransformOr<F, tag>&&)
+        auto transform_or(categories::TransformOr<tag, F>&&)
         {
             assert(false && "Trying to wrap already Transformer in transform!");
         }
 
         template<template<typename> typename tag, typename F>
-        auto transform_or(categories::TransformOr<F, tag> const&)
+        auto transform_or(categories::TransformOr<tag, F> const&)
         {
             assert(false && "Trying to wrap already Transformer in transform!");
         }
