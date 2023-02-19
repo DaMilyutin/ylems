@@ -5,8 +5,8 @@ namespace ylems
 {
     namespace rules
     {
-        template<typename Y, typename L, template<typename> typename tag>
-        struct YieldLink: public Yield<YieldLink<Y, L, tag>, tag>
+        template<template<typename> typename tag, typename Y, typename L>
+        struct YieldLink: public Yield<tag, YieldLink<tag, Y, L>>
         {
             template<typename TY, typename TL>
             YieldLink(TY&& y, TL&& l)
@@ -21,8 +21,8 @@ namespace ylems
             L link;
         };
 
-        template<typename L, typename S, template<typename> typename tag>
-        struct LinkSink: public Sink<LinkSink<L, S, tag>, tag>
+        template<template<typename> typename tag, typename L, typename S>
+        struct LinkSink: public Sink<tag, LinkSink<tag, L, S>>
         {
             template<typename TL, typename TS>
             LinkSink(TL&& l, TS&& s)
@@ -37,8 +37,8 @@ namespace ylems
             S sink;
         };
 
-        template<typename L1, typename L2, template<typename> typename tag>
-        struct LinkLink: public Link<LinkLink<L1, L2, tag>, tag>
+        template<template<typename> typename tag, typename L1, typename L2>
+        struct LinkLink: public Link<tag, LinkLink<tag, L1, L2>>
         {
             template<typename T1, typename T2>
             LinkLink(T1&& l1, T2&& l2)
@@ -59,55 +59,55 @@ namespace ylems
 
         // binary operations
         template<template<typename> typename tag, typename Y, typename L>
-        YieldLink<Y, L, tag> meld(Yield<Y, tag>&& y, Link<L, tag>&& l)
+        YieldLink<tag, Y, L> meld(Yield<tag, Y>&& y, Link<tag, L>&& l)
         {
             return {FWD(y)._get_(), FWD(l)._get_()};
         }
 
         template<template<typename> typename tag, typename Y, typename L>
-        YieldLink<Y const&, L, tag> meld(Yield<Y, tag> const& y, Link<L, tag>&& l)
+        YieldLink<tag, Y const&, L> meld(Yield<tag, Y> const& y, Link<tag, L>&& l)
         {
             return {y._get_(), FWD(l)._get_()};
         }
 
         template<template<typename> typename tag, typename Y, typename L>
-        YieldLink<Y, L const&, tag> meld(Yield<Y, tag>&& y, Link<L, tag> const& l)
+        YieldLink<tag, Y, L const&> meld(Yield<tag, Y>&& y, Link<tag, L> const& l)
         {
             return {FWD(y)._get_(), l._get_()};
         }
 
         template<template<typename> typename tag, typename Y, typename L>
-        YieldLink<Y const&, L const&, tag> meld(Yield<Y, tag> const& y, Link<L, tag> const& l)
+        YieldLink<tag, Y const&, L const&> meld(Yield<tag, Y> const& y, Link<tag, L> const& l)
         {
             return {y._get_(), l._get_()};
         }
 
         template<template<typename> typename tag, typename L1, typename L2>
-        LinkLink<L1, L2, tag> meld(Link<L1, tag>&& l1, Link<L2, tag>&& l2)
+        LinkLink<tag, L1, L2> meld(Link<tag, L1>&& l1, Link<tag, L2>&& l2)
         {
             return {FWD(l1)._get_(), FWD(l2)._get_()};
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<L, S, tag> meld(Link<L, tag>&& l, Sink<S, tag>&& s)
+        LinkSink<tag, L, S> meld(Link<tag, L>&& l, Sink<tag, S>&& s)
         {
             return {FWD(l)._get_(), FWD(s)._get_()};
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<L, S, tag> meld(Link<L, tag> const& l, Sink<S, tag>&& s)
+        LinkSink<tag, L, S> meld(Link<tag, L> const& l, Sink<tag, S>&& s)
         {
             return {l._get_(), FWD(s)._get_()};
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<L, S, tag> meld(Link<L, tag>&& l, Sink<S, tag>& s)
+        LinkSink<tag, L, S> meld(Link<tag, L>&& l, Sink<tag, S>& s)
         {
             return {FWD(l)._get_(), s._get_()};
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<L, S, tag> meld(Link<L, tag> const& l, Sink<S, tag>& s)
+        LinkSink<tag, L, S> meld(Link<tag, L> const& l, Sink<tag, S>& s)
         {
             return {l._get_(), s._get_()};
         }
@@ -116,7 +116,7 @@ namespace ylems
         // Yield + Sink => system closed and ready to run
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<Y, tag> const& yield, Sink<S, tag>& sink)
+        bool meld(Yield<tag, Y> const& yield, Sink<tag, S>& sink)
         {
             auto& the_sink = sink._get_();
             auto& the_yield = yield._get_();
@@ -127,44 +127,44 @@ namespace ylems
         }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<Y, tag>&& yield, Sink<S, tag>& sink) { return meld(yield._get_(), sink._get_()); }
+        bool meld(Yield<tag, Y>&& yield, Sink<tag, S>& sink) { return meld(yield._get_(), sink._get_()); }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<Y, tag> const& yield, Sink<S, tag>&& sink) { return meld(yield._get_(), sink._get_()); }
+        bool meld(Yield<tag, Y> const& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<Y, tag>&& yield, Sink<S, tag>&& sink) { return meld(yield._get_(), sink._get_()); }
+        bool meld(Yield<tag, Y>&& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
 
 
         // Yield + Sink: We prefer to keep Yield simple
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<Y, L, tag>&& yl, Sink<S, tag>&& sink)
+        bool meld(YieldLink<tag, Y, L>&& yl, Sink<tag, S>&& sink)
         {
             return meld(FWD(yl).yield, meld(FWD(yl).link, FWD(sink)));
         }
 
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<Y, L, tag> const& yl, Sink<S, tag>&& sink)
+        bool meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>&& sink)
         {
             return meld(yl.yield, meld(yl.link, FWD(sink)));
         }
 
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<Y, L, tag> const& yl, Sink<S, tag>& sink)
+        bool meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>& sink)
         {
             return meld(yl.yield, meld(yl.link, sink));
         }
 
         // reorganize pipeline around sink
         template<template<typename> typename tag, typename L1, typename L2, typename S>
-        LinkSink<L1, LinkSink<L2, S, tag>, tag> meld(LinkLink<L1, L2, tag>&& ll, Sink<S, tag>&& s)
+        LinkSink<tag, L1, LinkSink<tag, L2, S, tag>> meld(LinkLink<tag, L1, L2>&& ll, Sink<tag, S>&& s)
         {
             return meld(FWD(ll).link1, meld(FWD(ll).link2, FWD(s)));
         }
 
         // reorganize pipeline around yield
         template<template<typename> typename tag, typename Y, typename L1, typename L2>
-        YieldLink<YieldLink<Y, L1, tag>, L2, tag> meld(Yield<Y, tag>&& y, LinkLink<L1, L2, tag>&& ll)
+        YieldLink<tag, YieldLink<tag, Y, L1>, L2> meld(Yield<tag, Y>&& y, LinkLink<tag, L1, L2>&& ll)
         {
             return meld(meld(FWD(y), FWD(ll).link1), FWD(ll).link2);
         }

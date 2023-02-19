@@ -18,11 +18,11 @@ namespace ylems
 
         //TODO: concept/detect for Yield
 
-        template<typename E, template<typename> typename tag_terminal>
+        template<template<typename> typename tag_terminal, typename E>
         struct Yield: public tag_terminal<E>
         {};
 
-        template<typename E, template<typename> typename tag_terminal>
+        template<template<typename> typename tag_terminal, typename E>
         struct Link: public tag_terminal<E>
         {
             //for specific Link category(ex.Filter, Transform) one must provide methods
@@ -34,7 +34,7 @@ namespace ylems
             // for connection to Sink
         };
 
-        template<typename E, template<typename> typename tag_terminal>
+        template<template<typename> typename tag_terminal, typename E>
         struct Sink: public tag_terminal<E>
         {};
     }
