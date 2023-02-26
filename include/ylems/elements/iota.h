@@ -2,6 +2,8 @@
 #include <ylems/rules/abstract.h>
 #include <type_traits>
 #include <assert.h>
+#include <math.h>
+#include <algorithm>
 
 namespace ylems
 {
@@ -18,6 +20,10 @@ namespace ylems
             T _start;
             D _inc;
             I _count;
+
+            I index_before(T x) const { return I(floor((x-_start)/_inc)); }
+            I index_after(T x) const { return I(ceil((x-_start)/_inc)); }
+
         public:
             Iota(Iota&&) = default;
             Iota(Iota const&) = default;
@@ -43,6 +49,24 @@ namespace ylems
                 bool operator!=(Sentinel) const { return !!count; }
             };
 
+            Iota restrictedInside(T from, T to)
+            {
+                assert(from <= to);
+                I const i0 = std::max(index_after(from), I(0));
+                I const i1 = std::min(index_before(to), I(_count));
+                assert(i0 <= i1);
+                return Iota(_start + i0*_inc, _inc, i1 - i0 + 1);
+            }
+
+            Iota restrictedOutside(T from, T to)
+            {
+                assert(from <= to);
+                I const i0 = std::max(index_before(from), I(0));
+                I const i1 = std::min(index_after(to), _count);
+                assert(i0 <= i1);
+                return Iota(_start + i0*_inc, _inc, i1 - i0 + 1);
+            }
+
             Iterator begin() const { return Iterator(*this); }
             Sentinel end() const { return Sentinel{}; }
         };
@@ -52,6 +76,9 @@ namespace ylems
         {
             T _start;
             D _inc;
+
+            int index_before(T x) const { return int(floor((x-_start)/_inc)); }
+            int index_after(T x) const { return int(ceil((x-_start)/_inc)); }
         public:
             Iota(Iota&&) = default;
             Iota(Iota const&) = default;
@@ -73,6 +100,24 @@ namespace ylems
                 bool operator==(Sentinel) const { return false; }
                 bool operator!=(Sentinel) const { return true; }
             };
+
+            Iota<tag, T, D, int> restrictedInside(T from, T to) const
+            {
+                assert(from <= to);
+                int const i0 = std::max(index_after(from) , 0);
+                int const i1 = index_before(to);
+                assert(i0 <= i1);
+                return Iota<tag, T, D, int>(_start + i0*_inc, _inc, i1 - i0 + 1);
+            }
+
+            Iota<tag, T, D, int> restrictedOutside(T from, T to) const
+            {
+                assert(from <= to);
+                int const i0 = std::max(index_before(from), 0);
+                int const i1 = index_after(to);
+                assert(i0 <= i1);
+                return Iota<tag, T, D, int>(_start + i0*_inc, _inc, i1 - i0 + 1);
+            }
 
             Iterator begin() const { return Iterator(*this); }
             Sentinel end()   const { return Sentinel{}; }
