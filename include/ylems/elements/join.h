@@ -1,6 +1,5 @@
 #pragma once
 #include <ylems/rules/abstract.h>
-#include <ylems/utilities/tuple_fun.h>
 #include <variant>
 
 namespace ylems
@@ -44,11 +43,7 @@ namespace ylems
             template<typename T1, typename T2>
             JoinYield(T1&& s1, T2&& s2)
                 : y1(FWD(s1)), y2(FWD(s2))
-            {
-                //ylems::concepts::NotAYield<tag, JoinYield<tag, Y1, Y2>> x = true;
-                auto xx =  std::is_same_v<JoinYield<tag, Y1, Y2>, std::remove_cvref_t<decltype(*this)>>;
-                ylems::concepts::IsAYield<tag, JoinYield<tag, Y1, Y2>>  y = true;
-            }
+            {}
 
             struct Sentinel {};
 
