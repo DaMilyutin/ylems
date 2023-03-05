@@ -54,17 +54,33 @@ namespace ylems
                 assert(from <= to);
                 I const i0 = std::max(index_after(from), I(0));
                 I const i1 = std::min(index_before(to), I(_count));
-                assert(i0 <= i1);
+                if(i0 > i1)
+                    return Iota(_start, _inc, 0);
                 return Iota(_start + i0*_inc, _inc, i1 - i0 + 1);
             }
 
             Iota restrictedOutside(T from, T to)
             {
+                Iota ret(_start, _inc, 1);
+                if(_count <= 1)
+                    return ret;
                 assert(from <= to);
                 I const i0 = std::max(index_before(from), I(0));
                 I const i1 = std::min(index_after(to), _count);
-                assert(i0 <= i1);
-                return Iota(_start + i0*_inc, _inc, i1 - i0 + 1);
+                if(i0 > i1)
+                {
+                    if(i0 != I(0))
+                    {
+                        ret._start = _start + _inc*(_count-1);
+                        ret._count = 1;
+                    }
+                }
+                else
+                {
+                    ret._start = _start + i0*_inc;
+                    ret._count = i1 - i0 + 1;
+                }
+                return ret;
             }
 
             Iterator begin() const { return Iterator(*this); }
