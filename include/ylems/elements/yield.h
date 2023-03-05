@@ -1,6 +1,7 @@
 #pragma once
 #include <ylems/rules/abstract.h>
 #include <ylems/rules/is_a_range.h>
+#include <ylems/rules/is_a_yield.h>
 
 namespace ylems
 {
@@ -32,8 +33,14 @@ namespace ylems
     }
 }
 
-#define YLEMS_MELD_RANGE_OPERATION(tag, OP)                                                            \
-template<typename L, typename R, ylems::concepts::IsARange<L> = true> auto OP(L&& l, tag<R>&& r)       \
-{ return ylems::rules::meld_tag<tag>(ylems::elements::yield<tag>(FWD(l)), FWD(r)); }                        \
-template<typename L, typename R, ylems::concepts::IsARange<L> = true> auto OP(L const& l, tag<R>&& r)  \
+#define YLEMS_MELD_RANGE_OPERATION(tag, OP)                                           \
+template<typename L, typename R,                                                      \
+         ylems::concepts::IsARange<L> = true,                                         \
+         ylems::concepts::NotAYield<tag, L> = true>                                   \
+auto OP(L&& l, tag<R>&& r)                                                            \
+{ return ylems::rules::meld_tag<tag>(ylems::elements::yield<tag>(FWD(l)), FWD(r)); }  \
+template<typename L, typename R,                                                      \
+         ylems::concepts::IsARange<L> = true,                                         \
+         ylems::concepts::NotAYield<tag, L> = true>                                   \
+auto OP(L const& l, tag<R>&& r)                                                       \
 { return ylems::rules::meld_tag<tag>(ylems::elements::yield<tag>(l), FWD(r)); }
