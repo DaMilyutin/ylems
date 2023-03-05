@@ -3,6 +3,8 @@
 #include "elements/yield.h"
 #include "elements/iota.h"
 #include "elements/zip.h"
+#include "elements/join.h"
+
 
 #include "elements/take.h"
 #include "elements/drop.h"
