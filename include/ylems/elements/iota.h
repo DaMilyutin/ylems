@@ -10,7 +10,7 @@ namespace ylems
     namespace elements
     {
         template<typename T>
-        using difference_type = std::remove_all_extents_t<decltype(std::declval<T>()-std::declval<T>())>;
+        using difference_type = std::remove_cvref_t<decltype(std::declval<T>()-std::declval<T>())>;
 
 
         template<template<typename> typename tag, typename T, typename D, typename I>

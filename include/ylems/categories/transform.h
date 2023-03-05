@@ -12,14 +12,14 @@ namespace ylems
             template<typename Y>
             struct YieldDescriptor
             {
-                using UnderlyingIterator = std::remove_all_extents_t<decltype(std::begin(std::declval<Y>()))>;
-                using UnderlyingSentinel = std::remove_all_extents_t<decltype(std::end(std::declval<Y>()))>;
-                using from_t = std::remove_all_extents_t<decltype(*std::begin(std::declval<Y>()))>;
+                using UnderlyingIterator = std::remove_cvref_t<decltype(std::begin(std::declval<Y>()))>;
+                using UnderlyingSentinel = std::remove_cvref_t<decltype(std::end(std::declval<Y>()))>;
+                using from_t = std::remove_cvref_t<decltype(*std::begin(std::declval<Y>()))>;
 
-                using Sentinel = std::remove_all_extents_t<decltype(std::end(std::declval<Y>()))>;
+                using Sentinel = std::remove_cvref_t<decltype(std::end(std::declval<Y>()))>;
                 class Iterator
                 {
-                    using UnderlyingIterator = std::remove_all_extents_t<decltype(std::begin(std::declval<Y>()))>;
+                    using UnderlyingIterator = std::remove_cvref_t<decltype(std::begin(std::declval<Y>()))>;
                     using from_t = std::remove_cvref_t<decltype(*std::declval<UnderlyingIterator>())>;
                 public:
                     Iterator(Y const& yield, T const& transform)

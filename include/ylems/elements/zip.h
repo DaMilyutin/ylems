@@ -20,8 +20,8 @@ namespace ylems
 
             using TupSeqs = std::tuple<T...>;
 
-            using TupIterators = std::remove_all_extents_t<decltype(wrap(beginner{}, std::declval<TupSeqs>(), std::index_sequence_for<T...>{}))>;
-            using TupSentinels = std::remove_all_extents_t<decltype(wrap(ender{}, std::declval<TupSeqs>(), std::index_sequence_for<T...>{}))>;
+            using TupIterators = std::remove_cvref_t<decltype(wrap(beginner{}, std::declval<TupSeqs>(), std::index_sequence_for<T...>{}))>;
+            using TupSentinels = std::remove_cvref_t<decltype(wrap(ender{}, std::declval<TupSeqs>(), std::index_sequence_for<T...>{}))>;
 
 
         public:
