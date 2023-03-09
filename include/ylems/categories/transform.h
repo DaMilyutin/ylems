@@ -1,6 +1,7 @@
 #pragma once
 #include <ylems/rules/abstract.h>
 #include <assert.h>
+#include <iterator>
 
 namespace ylems
 {

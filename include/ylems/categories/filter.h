@@ -2,6 +2,7 @@
 #include <ylems/rules/abstract.h>
 #include <limits>
 #include <assert.h>
+#include <iterator>
 
 namespace ylems
 {
