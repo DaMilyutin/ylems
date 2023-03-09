@@ -62,7 +62,7 @@ namespace ylems
                     {
                     case 1:  return *std::get<Range1>(stage_).b;
                     case 2:  return *std::get<Range2>(stage_).b;
-                    default: return {};
+                    default: return *std::get<Range1>(stage_).b;
                     };
                 }
 
