@@ -38,8 +38,6 @@ namespace ylems
             };
 
         public:
-
-
             template<typename T1, typename T2>
             JoinYield(T1&& s1, T2&& s2)
                 : y1(FWD(s1)), y2(FWD(s2))
@@ -120,7 +118,7 @@ namespace ylems
             Sentinel end()   const { return Sentinel{}; }
 
             Y1 y1;
-            Y1 y2;
+            Y2 y2;
         };
 
         template<template<typename> typename tag, typename Y1, typename Y2>
