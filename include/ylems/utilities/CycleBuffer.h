@@ -43,7 +43,7 @@ namespace ylems
             }
 
             T       data_[N] = {};
-            size_t  l_       = 0;
+            size_t  l_       = N-1;
             size_t  depth_   = 0;
         };
 
