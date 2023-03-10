@@ -37,5 +37,14 @@ namespace ylems
         template<template<typename> typename tag_terminal, typename E>
         struct Sink: public tag_terminal<E>
         {};
+
+        template<typename Y, typename S>
+        bool transfuse(Y const& the_yield, S& the_sink)
+        {
+            for(auto&& e: the_yield)
+                if(!the_sink.consume(e))
+                    return false; // if sink forced to stop
+            return true;
+        }
     }
 }

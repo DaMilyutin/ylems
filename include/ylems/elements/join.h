@@ -1,6 +1,7 @@
 #pragma once
 #include <ylems/rules/abstract.h>
 #include <variant>
+#include <iterator>
 
 namespace ylems
 {
@@ -21,7 +22,7 @@ namespace ylems
             using V1 = std::remove_cvref_t<RV1>;
             using V2 = std::remove_cvref_t<RV2>;
 
-            static_assert(std::is_same_v<V1, V2>, "joined yields must return matching type!");
+            //static_assert(std::is_same_v<V1, V2>, "joined yields must return matching type!");
             using value_type = std::conditional_t<std::is_same_v<RV1, RV2>, RV1, V1>;
 
 
@@ -155,7 +156,7 @@ namespace ylems
     namespace rules
     {
         template<template<typename> typename tag, typename Y1, typename Y2, typename S>
-        bool meld(elements::JoinYield<tag, Y1, Y2> const& yield, Sink<tag, S>& sink)
+        bool transfuse(elements::JoinYield<tag, Y1, Y2> const& yield, S& sink)
         {
             auto& the_sink = sink._get_();
             auto& the_yield = yield._get_();

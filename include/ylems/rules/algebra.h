@@ -124,11 +124,8 @@ namespace ylems
         bool meld(Yield<tag, Y> const& yield, Sink<tag, S>& sink)
         {
             auto& the_sink = sink._get_();
-            auto& the_yield = yield._get_();
-            for(auto&& e: the_yield)
-                if(!the_sink.consume(e))
-                    return false; // if sink forced to stop
-            return true;
+            auto const& the_yield = yield._get_();
+            return transfuse(the_yield, the_sink);
         }
 
         template<template<typename> typename tag, typename Y, typename S>
