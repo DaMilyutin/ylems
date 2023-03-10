@@ -19,7 +19,7 @@ namespace ylems
             {
                 using UnderlyingIterator = std::remove_cv_t<decltype(std::begin(std::declval<Y>()))>;
                 using UnderlyingSentinel = std::remove_cv_t<decltype(std::end(std::declval<Y>()))>;
-                using from_t = std::remove_cvref_t<decltype(*std::begin(std::declval<Y>()))>;
+                using from_t = decltype(*std::begin(std::declval<Y>()));
 
                 struct Sentinel {};
                 class Iterator
@@ -31,11 +31,11 @@ namespace ylems
                     {
                         assert(count >= I());
                         while(_it != _end && count-- > I())
-                            ++_it;
+                            *_it, ++_it;
                     }
 
                     Iterator& operator++() { ++_it; return *this; }
-                    from_t const& operator*() const { return *_it; }
+                    from_t operator*() const { return *_it; }
                     bool operator!=(Sentinel) const { return _it != _end; }
                     bool operator==(Sentinel) const { return _it == _end; }
 
@@ -53,14 +53,19 @@ namespace ylems
 
             bool operator()(auto const&) const
             {
-                return count-- > I();
+                if(count > I())
+                {
+                    --count;
+                    return false;
+                }
+                return true;
             }
 
             template<typename S, typename E>
             bool feed(S& sink, E&& e) const
             {
-                if(count-- > I())
-                    return true;
+                if(count > I())
+                    return --count, true;
                 return sink.consume(FWD(e));
             }
 
@@ -68,7 +73,7 @@ namespace ylems
         };
 
         template<template<typename> typename tag, typename I>
-        auto drop(I count) { return DropWrap<I, tag>{count}; }
+        auto drop(I count) { return DropWrap<tag, I>{count}; }
 
         template<template<typename> typename tag, typename I>
         auto drop(DropWrap<tag, I>&&)
