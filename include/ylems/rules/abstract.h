@@ -38,13 +38,24 @@ namespace ylems
         struct Sink: public tag_terminal<E>
         {};
 
+        // most generic and can be specialised
+        template<typename Y, typename S>
+        struct Transfuser
+        {
+            static bool transfuse(Y const& the_yield, S& the_sink)
+            {
+                for(auto&& e: the_yield)
+                    if(!the_sink.consume(e))
+                        return false; // if sink forced to stop
+                return true;
+            }
+        };
+
         template<typename Y, typename S>
         bool transfuse(Y const& the_yield, S& the_sink)
         {
-            for(auto&& e: the_yield)
-                if(!the_sink.consume(e))
-                    return false; // if sink forced to stop
-            return true;
+            return Transfuser<Y, S>::transfuse(the_yield, the_sink);
         }
+
     }
 }
