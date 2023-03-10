@@ -4,6 +4,7 @@
 #include "elements/iota.h"
 #include "elements/zip.h"
 #include "elements/join.h"
+#include "elements/range.h"
 
 
 #include "elements/take.h"
