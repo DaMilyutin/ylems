@@ -106,13 +106,13 @@ namespace ylems
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<tag, L, S> meld(Link<tag, L>&& l, Sink<tag, S>& s)
+        LinkSink<tag, L, S&> meld(Link<tag, L>&& l, Sink<tag, S>& s)
         {
             return {FWD(l)._get_(), s._get_()};
         }
 
         template<template<typename> typename tag, typename L, typename S>
-        LinkSink<tag, L, S> meld(Link<tag, L> const& l, Sink<tag, S>& s)
+        LinkSink<tag, L, S&> meld(Link<tag, L> const& l, Sink<tag, S>& s)
         {
             return {l._get_(), s._get_()};
         }
