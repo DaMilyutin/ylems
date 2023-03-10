@@ -29,10 +29,10 @@ namespace ylems
         };
 
         template<template<typename> typename tag, typename F>
-        auto filter(F const& f) { return FilterWrap<F const&, tag>{f}; }
+        auto filter(F const& f) { return FilterWrap<tag, F const&>{f}; }
 
         template<template<typename> typename tag, typename F>
-        auto filter(F&& f) { return FilterWrap<F, tag>{ std::move(f)}; }
+        auto filter(F&& f) { return FilterWrap<tag, F>{ std::move(f)}; }
 
         template<template<typename> typename tag, typename F>
         auto filter(categories::Filter<tag, F>&&)
