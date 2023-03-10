@@ -14,6 +14,11 @@ namespace ylems
                 , link(FWD(l))
             {}
 
+            YieldLink<tag, Y const&, L const&> as_const() const
+            {
+                return {yield, link};
+            }
+
             auto begin() const { return link.begin(yield); }
             auto end()   const { return link.end(yield); }
 

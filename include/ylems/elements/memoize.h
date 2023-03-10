@@ -19,9 +19,9 @@ namespace ylems
             template<typename T>
             MemoizeWrap(T&& s): buffer(FWD(s)) {}
 
-            auto const& operator()(auto x) const
+            auto const& operator()(auto&& e) const
             {
-                buffer.push_back(x);
+                buffer.push_back(FWD(e));
                 return buffer;
             }
 
