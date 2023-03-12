@@ -1,6 +1,7 @@
 #pragma once
 #include <utility>
 #include <type_traits>
+#include <iterator>
 
 #define FWD(a) std::forward<decltype(a)>(a)
 
@@ -56,6 +57,26 @@ namespace ylems
         {
             return Transfuser<Y, S>::transfuse(the_yield, the_sink);
         }
+
+
+        template<typename Y>
+        struct yield_traits
+        {
+            using Iterator = std::remove_cvref_t<decltype(std::begin(std::declval<Y>()))>;
+            using Sentinel = std::remove_cvref_t<decltype(std::end(std::declval<Y>()))>;
+            using Element  = std::remove_cvref_t<decltype(*std::declval<Iterator>())>;
+        };
+
+        template<template<typename> typename tag_terminal, typename Y>
+        struct yield_traits<Yield<tag_terminal, Y>>
+        {
+            using Iterator = std::remove_cvref_t<decltype(std::begin(std::declval<Y>()))>;
+            using Sentinel = std::remove_cvref_t<decltype(std::end(std::declval<Y>()))>;
+            using Element  = std::remove_cvref_t<decltype(*std::declval<Iterator>())>;
+        };
+
+        template<typename Y>
+        using element_type_t = yield_traits<Y>::Element;
 
     }
 }

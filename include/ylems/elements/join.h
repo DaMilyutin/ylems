@@ -9,7 +9,7 @@ namespace ylems
     namespace elements
     {
 
-        template<typename JoinYield, typename Range1, typename Range2>
+        template<template<typename> typename tag, typename Range1, typename Range2>
         class JoinIterator
         {
         public:
@@ -17,15 +17,15 @@ namespace ylems
 
             using Stage = std::variant<std::monostate, Range1, Range2>;
 
-            JoinIterator(JoinYield const& j)
-                : j_(j)
+            JoinIterator(Range1 r1, Range2 r2)
+                : range1_(r1), range2_(r2)
             {
                 go_stage1();
             }
 
             JoinIterator& operator++() { increment(); return *this; }
 
-            decltype(auto) operator*() const
+            auto operator*() const
             {
                 switch(stage_.index())
                 {
@@ -40,13 +40,13 @@ namespace ylems
 
             Stage const& stage() const { return stage_; };
 
-            Range1 range1() const { return {std::begin(j_.y1), std::end(j_.y1)}; }
-            Range2 range2() const { return {std::begin(j_.y2), std::end(j_.y2)}; }
+            Range1 range1() const { return range1_; }
+            Range2 range2() const { return range2_; }
 
         private:
             void go_stage1()
             {
-                stage_.emplace<1>(std::begin(j_.y1), std::end(j_.y1));
+                stage_.emplace<1>(range1_);
                 auto const& rng = std::get<1>(stage_);
                 if(rng.iterator == rng.sentinel)
                     go_stage2();
@@ -54,7 +54,7 @@ namespace ylems
 
             void go_stage2()
             {
-                stage_.emplace<2>(std::begin(j_.y2), std::end(j_.y2));
+                stage_.emplace<2>(range2_);
                 auto const& rng = std::get<2>(stage_);
                 if(rng.iterator == rng.sentinel)
                     stage_ = std::monostate{};
@@ -82,8 +82,9 @@ namespace ylems
                 };
             }
 
-            JoinYield const& j_;
-            std::variant<std::monostate, Range1, Range2> stage_;
+            Range1 range1_;
+            Range2 range2_;
+            Stage  stage_;
         };
 
 
@@ -91,27 +92,12 @@ namespace ylems
         template<template<typename> typename tag, typename Y1, typename Y2>
         class JoinYield: public ylems::rules::Yield<tag, JoinYield<tag, Y1, Y2>>
         {
-            using I1 = std::remove_cvref_t<decltype(std::begin(std::declval<Y1>()))>;
-            using S1 = std::remove_cvref_t<decltype(std::end(std::declval<Y1>()))>;
-
-            using I2 = std::remove_cvref_t<decltype(std::begin(std::declval<Y2>()))>;
-            using S2 = std::remove_cvref_t<decltype(std::end(std::declval<Y2>()))>;
-
-            using RV1 = decltype(*std::declval<I1>());
-            using RV2 = decltype(*std::declval<I2>());
-
-            using V1 = std::remove_cvref_t<RV1>;
-            using V2 = std::remove_cvref_t<RV2>;
-
-            //static_assert(std::is_same_v<V1, V2>, "joined yields must return matching type!");
-            using value_type = std::conditional_t<std::is_same_v<RV1, RV2>, RV1, V1>;
-
         public:
 
-            using Range1 = RangeWrap<tag, I1, S1>;
-            using Range2 = RangeWrap<tag, I2, S2>;
+            using Range1 = std::remove_cvref_t<decltype(as_range<tag>(std::declval<Y1>()))>;
+            using Range2 = std::remove_cvref_t<decltype(as_range<tag>(std::declval<Y2>()))>;
 
-            using Iterator = JoinIterator<JoinYield, Range1, Range2>;
+            using Iterator = JoinIterator<tag, Range1, Range2>;
             using Sentinel = Iterator::Sentinel;
 
             template<typename T1, typename T2>
@@ -120,7 +106,7 @@ namespace ylems
             {}
 
 
-            Iterator begin() const { return Iterator(*this); }
+            Iterator begin() const { return Iterator(as_range<tag>(y1), as_range<tag>(y2)); }
             Sentinel end()   const { return Sentinel{}; }
 
             Y1 y1;
@@ -176,14 +162,14 @@ namespace ylems
             }
         };
 
-        template<template<typename> typename tag, typename JY, typename R1, typename R2, typename S>
-        struct Transfuser<elements::RangeWrap<tag, elements::JoinIterator<JY, R1, R2>,
-                                                   typename elements::JoinIterator<JY, R1, R2>::Sentinel>,
+        template<template<typename> typename tag, typename R1, typename R2, typename S>
+        struct Transfuser<elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
+                                                   typename elements::JoinIterator<tag, R1, R2>::Sentinel>,
                           S>
         {
 
-            static bool transfuse(elements::RangeWrap<tag, elements::JoinIterator<JY, R1, R2>,
-                                                  typename elements::JoinIterator<JY, R1, R2>::Sentinel> const& the_yield,
+            static bool transfuse(elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
+                                                  typename elements::JoinIterator<tag, R1, R2>::Sentinel> const& the_yield,
                                   S& the_sink)
             {
                 auto i = the_yield.begin();
