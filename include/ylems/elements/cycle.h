@@ -18,7 +18,7 @@ namespace ylems
         public:
             struct Sentinel {};
 
-            using Range2 = std::remove_cvref_t<decltype(as_range(std::declval<Storage>()))>;
+            using Range2 = std::remove_cvref_t<decltype(as_range<tag>(std::declval<Storage>()))>;
 
             using Stage = std::variant<std::monostate, Range1, Range1, Range2>;
 
