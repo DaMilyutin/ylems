@@ -30,7 +30,7 @@ namespace ylems
 
             CycleIterator& operator++() { increment(); return *this; }
 
-            decltype(auto) operator*() const
+            auto operator*() const
             {
                 switch(stage_.index())
                 {
@@ -68,7 +68,7 @@ namespace ylems
 
             void go_stage3()
             {
-                stage_.emplace<3>(as_range(storage_));
+                stage_.emplace<3>(as_range<tag>(storage_));
                 auto const& rng = std::get<3>(stage_);
                 if(rng.iterator == rng.sentinel)
                     stage_ = std::monostate{};
