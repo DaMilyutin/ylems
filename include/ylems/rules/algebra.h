@@ -121,7 +121,7 @@ namespace ylems
         // Yield + Sink => system closed and ready to run
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<tag, Y> const& yield, Sink<tag, S>& sink)
+        auto meld(Yield<tag, Y> const& yield, Sink<tag, S>& sink)
         {
             auto& the_sink = sink._get_();
             auto const& the_yield = yield._get_();
@@ -129,30 +129,30 @@ namespace ylems
         }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<tag, Y>&& yield, Sink<tag, S>& sink) { return meld(yield._get_(), sink._get_()); }
+        auto meld(Yield<tag, Y>&& yield, Sink<tag, S>& sink) { return meld(yield._get_(), sink._get_()); }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<tag, Y> const& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
+        auto meld(Yield<tag, Y> const& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
 
         template<template<typename> typename tag, typename Y, typename S>
-        bool meld(Yield<tag, Y>&& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
+        auto meld(Yield<tag, Y>&& yield, Sink<tag, S>&& sink) { return meld(yield._get_(), sink._get_()); }
 
 
         // Yield + Sink: We prefer to keep Yield simple
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<tag, Y, L>&& yl, Sink<tag, S>&& sink)
+        auto meld(YieldLink<tag, Y, L>&& yl, Sink<tag, S>&& sink)
         {
             return meld(FWD(yl).yield, meld(FWD(yl).link, FWD(sink)));
         }
 
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>&& sink)
+        auto meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>&& sink)
         {
             return meld(yl.yield, meld(yl.link, FWD(sink)));
         }
 
         template<template<typename> typename tag, typename Y, typename L, typename S>
-        bool meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>& sink)
+        auto meld(YieldLink<tag, Y, L> const& yl, Sink<tag, S>& sink)
         {
             return meld(yl.yield, meld(yl.link, sink));
         }

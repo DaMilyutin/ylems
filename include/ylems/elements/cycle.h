@@ -1,11 +1,10 @@
 #pragma once
 #include <ylems/rules/abstract.h>
+#include <ylems/rules/transfuse.h>
 #include <variant>
 #include <iterator>
 #include <ylems/elements/range.h>
-
 #include <ylems/utilities/Storage.h>
-
 #include <array>
 
 namespace ylems
@@ -45,11 +44,12 @@ namespace ylems
             bool operator!=(Sentinel) const { return stage_.index() != 0; }
 
             Stage const& stage() const { return stage_; };
+            Stage& mutable_stage() { return stage_; };
 
             Range1   range1() const { return range1_; }
             Storage& storage() { return storage_; }
 
-        private:
+
             void go_stage1()
             {
                 stage_.emplace<1>(range1_);
@@ -105,6 +105,7 @@ namespace ylems
                 };
             }
 
+        private:
             Range1          range1_;
             Storage         storage_;
             Stage           stage_;
@@ -201,29 +202,12 @@ namespace ylems
 
     namespace rules
     {
-
-        template<template<typename> typename tag, typename Y, typename S, typename Sink>
-        struct Transfuser<elements::CycleYield<tag, Y, S>, Sink>
+        template<template<typename> typename tag, typename Y1, typename Y2, typename S>
+        struct Transfuser<elements::CycleYield<tag, Y1, Y2>, S>
         {
-            static bool transfuse(elements::CycleYield<tag, Y, S> const& the_yield, Sink& the_sink)
+            static auto transfuse(elements::CycleYield<tag, Y1, Y2> const& the_yield, S& the_sink)
             {
-                auto& storage = the_yield.storage;
-                auto b = std::begin(the_yield.yield);
-                auto e = std::end(the_yield.yield);
-                for(; b != e && !storage.full(); ++b)
-                {
-                    auto&& v = *b;
-                    storage.push_back(v);
-                    if(!the_sink.consume(FWD(v)))
-                        return false;
-                }
-                for(; b != e; ++b)
-                    if(!the_sink.consume(FWD(*b)))
-                        return false;
-                for(auto&& v: storage)
-                    if(!the_sink.consume(FWD(v)))
-                        return false;
-                return true;
+                return rules::transfuse(elements::as_range<tag>(the_yield), the_sink);
             }
         };
 
@@ -232,38 +216,49 @@ namespace ylems
                                           typename elements::CycleIterator<tag, R, S>::Sentinel>,
                           Sink>
         {
-            static bool transfuse(elements::RangeWrap<tag, elements::CycleIterator<tag, R, S>,
+            using Range_t = rules::detail::Range<elements::CycleIterator<tag, R, S>,
+                                                 typename elements::CycleIterator<tag, R, S>::Sentinel>;
+
+
+            static Range_t transfuse(elements::RangeWrap<tag, elements::CycleIterator<tag, R, S>,
                                                   typename elements::CycleIterator<tag, R, S>::Sentinel> the_yield,
                                   Sink& the_sink)
             {
                 auto i = the_yield.begin();
-                auto const& stage = i.stage();
+                auto s = the_yield.end();
+                auto& stage = i.mutable_stage();
                 auto& storage = i.storage();
-                if(stage.index() == 1)
+                switch(stage.index())
                 {
-                    auto rng1 = std::get<1>(stage);
-                    auto b = rng1.interator;
-                    auto e = rng1.sentinel;
-                    for(; b != e && !storage.full(); ++b)
+                case 1:
+                {
+                    auto& rng1 = std::get<1>(stage);
+                    for(; rng1.iterator != rng1.sentinel && !storage.full(); ++rng1.iterator)
                     {
-                        auto&& v = *b;
+                        auto&& v = *rng1.iterator;
                         storage.push_back(v);
                         if(!the_sink.consume(FWD(v)))
-                            return false;
+                            return {i, s};
                     }
-                    for(; b != e; ++b)
-                        if(!the_sink.consume(FWD(*b)))
-                            return false;
-                    for(auto&& v: storage)
-                        if(!the_sink.consume(FWD(v)))
-                            return false;
-                    return true;
+                    i.go_stage2();
                 }
-                else if(stage.index() == 2)
-                    return rules::transfuse(std::get<2>(stage), the_sink);
-                else if(stage.index() == 3)
-                    return rules::transfuse(std::get<3>(stage), the_sink);
-                return true;
+                case 2:
+                {
+                    auto& rng2 = std::get<2>(stage);
+                    for(; rng2.iterator != rng2.sentinel; ++rng2.iterator)
+                        if(!the_sink.consume(FWD(*rng2.iterator)))
+                            return {i, s};
+                    i.go_stage3();
+                }
+                case 3:
+                {
+                    auto& rng3 = std::get<3>(stage);
+                    for(; rng3.iterator != rng3.sentinel; ++rng3.iterator)
+                        if(!the_sink.consume(FWD(*rng3.iterator)))
+                            return {i, s};
+                }
+                default: return {i, s};
+                };
             }
         };
     }

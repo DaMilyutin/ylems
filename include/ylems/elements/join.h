@@ -39,11 +39,11 @@ namespace ylems
             bool operator!=(Sentinel) const { return stage_.index() != 0; }
 
             Stage const& stage() const { return stage_; };
+            Stage& mutable_stage() { return stage_; };
 
             Range1 range1() const { return range1_; }
             Range2 range2() const { return range2_; }
 
-        private:
             void go_stage1()
             {
                 stage_.emplace<1>(range1_);
@@ -82,6 +82,7 @@ namespace ylems
                 };
             }
 
+        private:
             Range1 range1_;
             Range2 range2_;
             Stage  stage_;
@@ -150,15 +151,9 @@ namespace ylems
         template<template<typename> typename tag, typename Y1, typename Y2, typename S>
         struct Transfuser<elements::JoinYield<tag, Y1, Y2>, S>
         {
-            static bool transfuse(elements::JoinYield<tag, Y1, Y2> const& the_yield, S& the_sink)
+            static auto transfuse(elements::JoinYield<tag, Y1, Y2> const& the_yield, S& the_sink)
             {
-                for(auto&& e: the_yield.y1)
-                    if(!the_sink.consume(e))
-                        return false; // if the_sink forced to stop
-                for(auto&& e: the_yield.y2)
-                    if(!the_sink.consume(e))
-                        return false; // if the_sink forced to stop
-                return true;
+                return rules::transfuse(elements::as_range<tag>(the_yield), the_sink);
             }
         };
 
@@ -167,18 +162,33 @@ namespace ylems
                                                    typename elements::JoinIterator<tag, R1, R2>::Sentinel>,
                           S>
         {
+            using Range_t = rules::detail::Range<elements::JoinIterator<tag, R1, R2>, typename elements::JoinIterator<tag, R1, R2>::Sentinel>;
 
-            static bool transfuse(elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
-                                                  typename elements::JoinIterator<tag, R1, R2>::Sentinel> const& the_yield,
-                                  S& the_sink)
+            static Range_t transfuse(elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
+                                                  typename elements::JoinIterator<tag, R1, R2>::Sentinel> the_yield,
+                                     S& the_sink)
             {
                 auto i = the_yield.begin();
-                auto const& stage = i.stage();
+                auto s = the_yield.end();
+                auto& stage = i.mutable_stage();
                 if(stage.index() == 1)
-                    return rules::transfuse(std::get<1>(stage), the_sink) && rules::transfuse(i.range2(), the_sink);
+                {
+                    std::get<1>(stage) = rules::transfuse(std::get<1>(stage), the_sink);
+                    {
+                        auto const& rng1 = std::get<1>(stage);
+                        if(rng1.iterator != rng1.sentinel)
+                            return {i, s};
+                    }
+                    i.go_stage2();
+                    std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
+                    return {i, s};
+                }
                 else if(stage.index() == 2)
-                    return rules::transfuse(std::get<2>(stage), the_sink);
-                return true;
+                {
+                    std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
+                    return {i, s};
+                }
+                return the_yield;
             }
         };
     }

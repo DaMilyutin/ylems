@@ -2,6 +2,7 @@
 #include <utility>
 #include <type_traits>
 #include <iterator>
+//#include "transfuse.h"
 
 #define FWD(a) std::forward<decltype(a)>(a)
 
@@ -38,26 +39,6 @@ namespace ylems
         template<template<typename> typename tag_terminal, typename E>
         struct Sink: public tag_terminal<E>
         {};
-
-        // most generic and can be specialised
-        template<typename Y, typename S>
-        struct Transfuser
-        {
-            static bool transfuse(Y const& the_yield, S& the_sink)
-            {
-                for(auto&& e: the_yield)
-                    if(!the_sink.consume(e))
-                        return false; // if sink forced to stop
-                return true;
-            }
-        };
-
-        template<typename Y, typename S>
-        bool transfuse(Y const& the_yield, S& the_sink)
-        {
-            return Transfuser<Y, S>::transfuse(the_yield, the_sink);
-        }
-
 
         template<typename Y>
         struct yield_traits
