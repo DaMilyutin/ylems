@@ -8,6 +8,7 @@
 #include "elements/cycle.h"
 
 
+#include "elements/tee.h"
 #include "elements/take.h"
 #include "elements/drop.h"
 #include "elements/filter.h"
@@ -15,3 +16,5 @@
 #include "elements/transform.h"
 #include "elements/transform_or.h"
 #include "elements/memoize.h"
+
+#include "elements/push_back.h"
