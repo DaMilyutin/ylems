@@ -99,7 +99,7 @@ namespace ylems
             using Range2 = std::remove_cvref_t<decltype(as_range<tag>(std::declval<Y2>()))>;
 
             using Iterator = JoinIterator<tag, Range1, Range2>;
-            using Sentinel = Iterator::Sentinel;
+            using Sentinel = typename Iterator::Sentinel;
 
             template<typename T1, typename T2>
             JoinYield(T1&& s1, T2&& s2)

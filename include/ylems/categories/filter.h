@@ -23,29 +23,29 @@ namespace ylems
                 {
                 public:
                     Iterator(Y const& yield, F const& filter)
-                        : _it(std::begin(yield))
-                        , _end(std::end(yield))
-                        , _select(filter)
+                        : it_(std::begin(yield))
+                        , end_(std::end(yield))
+                        , select_(filter)
                     {
                         next();
                     }
 
-                    from_t const& operator*() const { return _cached; }
-                    Iterator& operator++() { if(_it!=_end) ++_it; next(); return *this; }
+                    from_t const& operator*() const { return cached_; }
+                    Iterator& operator++() { if(it_!=end_) ++it_; next(); return *this; }
 
-                    bool operator!=(Sentinel) const { return _it != _end; }
-                    bool operator==(Sentinel) const { return _it == _end; }
+                    bool operator!=(Sentinel) const { return it_ != end_; }
+                    bool operator==(Sentinel) const { return it_ == end_; }
                 private:
                     void next()
                     {
-                        while(_it!=_end && !_select(_cached = *_it))
-                            ++_it;
+                        while(it_!=end_ && !select_(cached_ = *it_))
+                            ++it_;
                     }
 
-                    UnderlyingIterator         _it;
-                    UnderlyingSentinel         _end;
-                    F const&                   _select;
-                    from_t           mutable   _cached{};
+                    UnderlyingIterator         it_;
+                    UnderlyingSentinel         end_;
+                    F const&                   select_;
+                    from_t           mutable   cached_{};
                 };
 
                 static auto begin(Y const& y, F const& f) { return Iterator(y, f); }

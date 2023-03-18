@@ -26,29 +26,29 @@ namespace ylems
                 {
                 public:
                     Iterator(Y const& y, E const& l)
-                        : _it(std::begin(y))
-                        , _end(std::end(y))
-                        , _transform(l)
+                        : it_(std::begin(y))
+                        , end_(std::end(y))
+                        , transform_(l)
                     {
                         next();
                     }
 
-                    unwrapped_t const& operator*() const { return *_cached; }
-                    Iterator& operator++() { if(_it!=_end) ++_it; next(); return *this; }
+                    unwrapped_t const& operator*() const { return *cached_; }
+                    Iterator& operator++() { if(it_!=end_) ++it_; next(); return *this; }
 
-                    bool operator!=(Sentinel) const { return _it != _end; }
-                    bool operator==(Sentinel) const { return _it == _end; }
+                    bool operator!=(Sentinel) const { return it_ != end_; }
+                    bool operator==(Sentinel) const { return it_ == end_; }
                 private:
                     void next()
                     {
-                        while(_it!=_end && !(_cached = _transform(*_it)))
-                            ++_it;
+                        while(it_!=end_ && !(cached_ = transform_(*it_)))
+                            ++it_;
                     }
 
-                    UnderlyingIterator           _it;
-                    UnderlyingSentinel           _end;
-                    E                  const&    _transform;
-                    to_t              mutable    _cached{};
+                    UnderlyingIterator           it_;
+                    UnderlyingSentinel           end_;
+                    E                  const&    transform_;
+                    to_t              mutable    cached_{};
                 };
 
                 static auto begin(Y const& y, E const& l) { return Iterator(y, l); }

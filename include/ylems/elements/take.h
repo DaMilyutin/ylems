@@ -26,22 +26,22 @@ namespace ylems
                 {
                 public:
                     Iterator(Y const& yield, I count)
-                        : _it(std::begin(yield))
-                        , _end(std::end(yield))
-                        , _count(count)
+                        : it_(std::begin(yield))
+                        , end_(std::end(yield))
+                        , count_(count)
                     {
                         assert(count >= I());
                     }
 
-                    Iterator& operator++() { ++_it; --_count; return *this; }
-                    from_t const& operator*() const { return *_it; }
-                    bool operator!=(Sentinel) const { return _it != _end && _count > I(); }
-                    bool operator==(Sentinel) const { return _it == _end || _count == I(); }
+                    Iterator& operator++() { ++it_; --count_; return *this; }
+                    from_t const& operator*() const { return *it_; }
+                    bool operator!=(Sentinel) const { return it_ != end_ && count_ > I(); }
+                    bool operator==(Sentinel) const { return it_ == end_ || count_ == I(); }
 
                 private:
-                    UnderlyingIterator         _it;
-                    UnderlyingSentinel         _end;
-                    I                          _count;
+                    UnderlyingIterator         it_;
+                    UnderlyingSentinel         end_;
+                    I                          count_;
                 };
 
                 static auto begin(Y const& y, I i) { return Iterator(y, i); }

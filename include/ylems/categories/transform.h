@@ -24,17 +24,17 @@ namespace ylems
                     using from_t = std::remove_cvref_t<decltype(*std::declval<UnderlyingIterator>())>;
                 public:
                     Iterator(Y const& yield, T const& transform)
-                        : _it(std::begin(yield))
-                        , _transform(transform)
+                        : it_(std::begin(yield))
+                        , transform_(transform)
                     {}
 
-                    Iterator& operator++() { ++_it; return *this; }
-                    auto operator*() const { return _transform(*_it); }
-                    bool operator!=(Sentinel const& s) const { return _it != s; }
-                    bool operator==(Sentinel const& s) const { return _it == s; }
+                    Iterator& operator++() { ++it_; return *this; }
+                    auto operator*() const { return transform_(*it_); }
+                    bool operator!=(Sentinel const& s) const { return it_ != s; }
+                    bool operator==(Sentinel const& s) const { return it_ == s; }
                 private:
-                    UnderlyingIterator  _it;
-                    T const& _transform;
+                    UnderlyingIterator  it_;
+                    T const& transform_;
                 };
 
                 static auto begin(Y const& y, T const& l) { return Iterator(y, l); }
