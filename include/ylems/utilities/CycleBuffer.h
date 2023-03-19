@@ -35,6 +35,12 @@ namespace ylems
                 return data_[(N + l_ - i)%N];
             }
 
+            T& back(size_t i = 0)
+            {
+                assert(i < N);
+                return data_[(N + l_ - i)%N];
+            }
+
         private:
             static void inc(size_t& i)
             {
