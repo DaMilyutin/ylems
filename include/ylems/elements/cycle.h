@@ -60,7 +60,8 @@ namespace ylems
 
             void go_stage2()
             {
-                stage_.emplace<2>(std::get<1>(stage_));
+                auto range1 = std::get<1>(stage_);
+                stage_.emplace<2>(range1);
                 auto const& rng = std::get<2>(stage_);
                 if(rng.iterator == rng.sentinel)
                     go_stage3();
