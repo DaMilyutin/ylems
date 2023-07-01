@@ -202,7 +202,7 @@ struct MyStruct: my_pipeline::categories::TransformOr<MyStruct>
     {
         if(x != x)
             return true;
-        return sink.consume(Segment<port_t>{transform(r.start), transform(r.end)});
+        return sink.consume(x);
     }
 
     // for begin and end TransformOr<MyStruct> will be used
