@@ -46,15 +46,12 @@ namespace ylems
     namespace rules
     {
         template<template<typename> typename tag, typename B, typename E, typename Sink>
-        struct Transfuser<elements::RangeWrap<tag, B, E>, Sink>
+        auto transfuse(elements::RangeWrap<tag, B, E> const& the_yield, Sink& the_sink)
         {
-            static auto transfuse(elements::RangeWrap<tag, B, E> const& the_yield, Sink& the_sink)
-            {
-                rules::detail::Range<B, E> rng = the_yield;
-                while(rng.iterator != rng.sentinel && the_sink.consume(*rng.iterator))
-                    ++rng.iterator;
-                return rng;
-            }
-        };
+            rules::detail::Range<B, E> rng = the_yield;
+            while(rng.iterator != rng.sentinel && the_sink.consume(*rng.iterator))
+                ++rng.iterator;
+            return rng;
+        }
     }
 }

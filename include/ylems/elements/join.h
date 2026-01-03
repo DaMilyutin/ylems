@@ -149,47 +149,40 @@ namespace ylems
     {
 
         template<template<typename> typename tag, typename Y1, typename Y2, typename S>
-        struct Transfuser<elements::JoinYield<tag, Y1, Y2>, S>
+        auto transfuse(elements::JoinYield<tag, Y1, Y2> const& the_yield, S& the_sink)
         {
-            static auto transfuse(elements::JoinYield<tag, Y1, Y2> const& the_yield, S& the_sink)
-            {
-                return rules::transfuse(elements::as_range<tag>(the_yield), the_sink);
-            }
-        };
+            return rules::transfuse(elements::as_range<tag>(the_yield), the_sink);
+        }
+
 
         template<template<typename> typename tag, typename R1, typename R2, typename S>
-        struct Transfuser<elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
-                                                   typename elements::JoinIterator<tag, R1, R2>::Sentinel>,
-                          S>
+        rules::detail::Range<elements::JoinIterator<tag, R1, R2>, typename elements::JoinIterator<tag, R1, R2>::Sentinel>
+            transfuse(elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
+                        typename elements::JoinIterator<tag, R1, R2>::Sentinel> the_yield,
+                        S& the_sink)
         {
-            using Range_t = rules::detail::Range<elements::JoinIterator<tag, R1, R2>, typename elements::JoinIterator<tag, R1, R2>::Sentinel>;
-
-            static Range_t transfuse(elements::RangeWrap<tag, elements::JoinIterator<tag, R1, R2>,
-                                                  typename elements::JoinIterator<tag, R1, R2>::Sentinel> the_yield,
-                                     S& the_sink)
+            auto i = the_yield.begin();
+            auto s = the_yield.end();
+            auto& stage = i.mutable_stage();
+            if(stage.index() == 1)
             {
-                auto i = the_yield.begin();
-                auto s = the_yield.end();
-                auto& stage = i.mutable_stage();
-                if(stage.index() == 1)
+                std::get<1>(stage) = rules::transfuse(std::get<1>(stage), the_sink);
                 {
-                    std::get<1>(stage) = rules::transfuse(std::get<1>(stage), the_sink);
-                    {
-                        auto const& rng1 = std::get<1>(stage);
-                        if(rng1.iterator != rng1.sentinel)
-                            return {i, s};
-                    }
-                    i.go_stage2();
-                    std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
-                    return {i, s};
+                    auto const& rng1 = std::get<1>(stage);
+                    if(rng1.iterator != rng1.sentinel)
+                        return {i, s};
                 }
-                else if(stage.index() == 2)
-                {
-                    std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
-                    return {i, s};
-                }
-                return the_yield;
+                i.go_stage2();
+                std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
+                return {i, s};
             }
-        };
+            else if(stage.index() == 2)
+            {
+                std::get<2>(stage) = rules::transfuse(std::get<2>(stage), the_sink);
+                return {i, s};
+            }
+            return the_yield;
+        }
+
     }
 }

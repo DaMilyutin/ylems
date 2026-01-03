@@ -204,24 +204,15 @@ namespace ylems
     namespace rules
     {
         template<template<typename> typename tag, typename Y1, typename Y2, typename S>
-        struct Transfuser<elements::CycleYield<tag, Y1, Y2>, S>
-        {
-            static auto transfuse(elements::CycleYield<tag, Y1, Y2> const& the_yield, S& the_sink)
+        auto transfuse(elements::CycleYield<tag, Y1, Y2> const& the_yield, S& the_sink)
             {
                 return rules::transfuse(elements::as_range<tag>(the_yield), the_sink);
             }
-        };
 
         template<template<typename> typename tag, typename R, typename S, typename Sink>
-        struct Transfuser<elements::RangeWrap<tag, elements::CycleIterator<tag, R, S>,
-                                          typename elements::CycleIterator<tag, R, S>::Sentinel>,
-                          Sink>
-        {
-            using Range_t = rules::detail::Range<elements::CycleIterator<tag, R, S>,
-                                                 typename elements::CycleIterator<tag, R, S>::Sentinel>;
-
-
-            static Range_t transfuse(elements::RangeWrap<tag, elements::CycleIterator<tag, R, S>,
+        rules::detail::Range<elements::CycleIterator<tag, R, S>,
+                             typename elements::CycleIterator<tag, R, S>::Sentinel>
+            transfuse(elements::RangeWrap<tag, elements::CycleIterator<tag, R, S>,
                                                   typename elements::CycleIterator<tag, R, S>::Sentinel> the_yield,
                                   Sink& the_sink)
             {
@@ -261,6 +252,5 @@ namespace ylems
                 default: return {i, s};
                 };
             }
-        };
     }
 }
